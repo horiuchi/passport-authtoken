@@ -46,7 +46,7 @@ passport.deserializeUser(function(id, done) {
 });
 
 
-// Use the LocalStrategy within Passport.
+// Use the AuthTokenStrategy within Passport.
 //   Strategies in passport require a `verify` function, which accept
 //   credentials (in this case, a token and pin number), and invoke a callback
 //   with a user object.  In the real world, this would query a database;
@@ -63,7 +63,7 @@ passport.use(new AuthTokenStrategy(
       // authenticated `user`.
       findByToken(token, function(err, user) {
         if (err) { return done(err); }
-        if (!user) { return done(null, null, { message: 'Unknown user ' + username }); }
+        if (!user) { return done(null, null, { message: 'Unknown auth token ' + token }); }
         if (user.pin != pin) { return done(null, null, { message: 'Invalid pin number' }); }
         return done(null, user);
       })
@@ -115,7 +115,7 @@ app.get('/login', function(req, res){
 //
 //   curl -v -d "token=abcd&pin=0000" http://127.0.0.1:3000/login
 app.post('/login', 
-  passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
+  passport.authenticate('authtoken', { failureRedirect: '/login', failureFlash: true }),
   function(req, res) {
     res.redirect('/');
   });
@@ -125,7 +125,7 @@ app.post('/login',
 //   acheive the same functionality.
 /*
 app.post('/login', function(req, res, next) {
-  passport.authenticate('local', function(err, user, info) {
+  passport.authenticate('authtoken', function(err, user, info) {
     if (err) { return next(err) }
     if (!user) {
       req.flash('error', info.message);
